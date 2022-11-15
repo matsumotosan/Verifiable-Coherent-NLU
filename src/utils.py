@@ -47,4 +47,4 @@ def get_components(model, cache_dir):
         cache_dir=cache_dir
     )
 
-    return model_class, config_class, emb_class, tokenizer, lm_class
+    return model_name, model_class, config_class, emb_class, tokenizer, lm_class
