@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score, f1_score
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from transformers import get_linear_schedule_with_warmup
 import numpy as np
+import transformers
 
 from www.model.transformers_ext import TieredModelPipeline
 from www.model.eval import evaluate_tiered, save_results, save_preds, add_entity_attribute_labels
@@ -16,6 +17,7 @@ from www.dataset.ann import att_to_idx, att_to_num_classes, att_types
 
 from src.utils import get_components
 from src.preprocessing import data_setup, get_baseline, get_tensor_dataset
+from src.dataloading import get_dataloaders
 
 
 def main(args):
@@ -31,27 +33,12 @@ def main(args):
     tiered_dataset = get_baseline(cloze_dataset_2s, tokenizer)
     tiered_tensor_dataset = get_tensor_dataset(tiered_dataset)
 
-    # Set up train dataloader (TODO: implement get_train_dataloader)
-    train_sampler = RandomSampler(tiered_tensor_dataset['train'])
-    train_dataloader = DataLoader(
-        tiered_tensor_dataset['train'],
-        sampler=train_sampler,
-        batch_size=args.batch_size
-    )
-    
-    # Set up dev dataloader (TODO: implement get_val_dataloader)
-    dev_sampler = SequentialSampler(tiered_tensor_dataset['dev'])
-    dev_dataloader = DataLoader(
-        tiered_tensor_dataset['dev'],
-        sampler=dev_sampler,
-        batch_size=args.eval_batch_size
-    )
+    print('getting dataloaders')
+    train_dataloader, dev_dataloader, test_dataloader = get_dataloaders(args, tiered_tensor_dataset)
+
     dev_dataset_name = args.subtask + '_%s_dev'
     dev_ids = [ex['example_id'] for ex in tiered_dataset['dev']]
-
-    # Set up test dataloader (TODO: implement get_test_dataloader)
-    test_dataloader = None
-
+    print('dataloaders created')
     # Set number of state variables
     num_state_labels = {}
     for att in att_to_idx:
@@ -200,6 +187,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Train and test model on TRIP.")
+    transformers.logging.set_verbosity_error()
 
     # Model
     parser.add_argument("--dataset", type=str, default="trip")
@@ -212,10 +200,11 @@ if __name__ == "__main__":
     # Hyperparameters
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--eval_batch_size", type=int, default=16)
+    parser.add_argument("--test_batch_size", type=int, default=8)
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=1e-5)
     parser.add_argument("--loss_weights", type=list, default=[0.0, 0.4, 0.4, 0.2, 0.0])
-    parser.add_argument("--objective", type=str, choices=["default"], default="default")
+    # parser.add_argument("--objective", type=str, choices=["default"], default="default")
     parser.add_argument("--grad-surgery", type=bool, default=False)
     
     # Logging
