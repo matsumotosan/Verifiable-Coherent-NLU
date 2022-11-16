@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from sklearn.metrics import accuracy_score, f1_score
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from transformers import get_linear_schedule_with_warmup
+import numpy as np
 
 from www.model.transformers_ext import TieredModelPipeline
 from www.model.eval import evaluate_tiered, save_results, save_preds, add_entity_attribute_labels
@@ -14,6 +15,7 @@ from www.utils import print_dict, get_model_dir
 from www.dataset.ann import att_to_idx, att_to_num_classes, att_types
 
 from src.utils import get_components
+from src.preprocessing import data_setup, get_baseline, get_tensor_dataset
 
 
 def main(args):
@@ -21,8 +23,13 @@ def main(args):
     model_name, model_class, config_class, emb_class, tokenizer, lm_class = get_components(args.model, args.cache_dir)
 
     # Preprocess data (TODO: implement preprocessing module)
-    tiered_dataset = None
-    tiered_tensor_dataset = None
+    partitions = ['train', 'dev', 'test']
+    subtasks = ['cloze', 'order']
+
+    cloze_dataset_2s, order_dataset_2s = data_setup()
+
+    tiered_dataset = get_baseline(cloze_dataset_2s, tokenizer)
+    tiered_tensor_dataset = get_tensor_dataset(tiered_dataset)
 
     # Set up train dataloader (TODO: implement get_train_dataloader)
     train_sampler = RandomSampler(tiered_tensor_dataset['train'])
