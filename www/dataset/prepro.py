@@ -1,17 +1,10 @@
-import argparse
 import random
-import os
-import copy
-from www.dataset.ann import att_to_idx, att_change_dir, att_types, att_default_values
-from www.utils import print_dict
-from collections import Counter
 import numpy as np
-from itertools import product
-import math
-import json
-import jsonlines
-import progressbar
-from time import sleep
+
+from collections import Counter
+
+from www.dataset.ann import att_to_idx, att_change_dir, att_types, att_default_values
+
 
 def split_list_by_ratio(list_in, ratios):
   len_list = len(list_in)
