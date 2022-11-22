@@ -216,7 +216,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, default="roberta")
     parser.add_argument("--objective", type=str, choices=["default", "pcgrad"], default="default")
     parser.add_argument("--ablation", type=list, default=["attributes", "states-logits"])
-    # parser.add_argument("--subtask", type=str, default="cloze", choices=["cloze", "order"])
+    parser.add_argument("--subtask", type=str, default="cloze", choices=["cloze", "order"])
     parser.add_argument("--train_spans", type=bool, default=False)
     
     # Hyperparameters
