@@ -12,7 +12,7 @@
 # set up job
 module load python/3.9.12 cuda
 pushd /home/matsumos/Verifiable-Coherent-NLU
-source /venv/bin/activate
+source venv/bin/activate
 
 # run job
 python3 main.py
