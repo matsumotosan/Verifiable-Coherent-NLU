@@ -7,3 +7,4 @@ EECS595_Proposal.pdf
 __pycache__/
 cache/
 *.out
+venv/
