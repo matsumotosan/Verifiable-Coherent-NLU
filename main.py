@@ -187,7 +187,7 @@ def main(args):
     metr_eff, all_pred_eff, all_eff, \
     metr_conflicts, all_pred_conflicts, all_conflicts, \
     metr_stories, all_pred_stories, all_stories, explanations = evaluate_tiered(model, test_dataloader, device, [(accuracy_score, 'accuracy'), (f1_score, 'f1')], seg_mode=False, return_explanations=True)
-    explanations = add_entity_attribute_labels(explanations, tiered_dataset, list(att_to_num_classes.keys()))
+    explanations = add_entity_attribute_labels(explanations, tiered_dataset['test'], list(att_to_num_classes.keys()))
 
     test_dataset_name = args.subtask + '_%s_test'
     save_results(metr_attr, output_dir, test_dataset_name % 'attributes')
@@ -213,8 +213,8 @@ if __name__ == "__main__":
 
     # Model
     parser.add_argument("--dataset", type=str, default="trip")
-    parser.add_argument("--model", type=str, default="bert")
-    parser.add_argument("--objective", type=str, default="default")
+    parser.add_argument("--model", type=str, default="roberta")
+    parser.add_argument("--objective", type=str, choices=["default", "pcgrad"], default="default")
     parser.add_argument("--ablation", type=list, default=["attributes", "states-logits"])
     # parser.add_argument("--subtask", type=str, default="cloze", choices=["cloze", "order"])
     parser.add_argument("--train_spans", type=bool, default=False)
@@ -226,7 +226,6 @@ if __name__ == "__main__":
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=1e-5)
     parser.add_argument("--loss_weights", type=list, default=[0.0, 0.4, 0.4, 0.2, 0.0])
-    # parser.add_argument("--objective", type=str, choices=["default", "pcgrad"], default="default")
     parser.add_argument("--grad-surgery", type=bool, default=False)
     
     # Logging
