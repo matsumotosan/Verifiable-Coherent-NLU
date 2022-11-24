@@ -180,9 +180,10 @@ class TieredModelPipeline(nn.Module):
     ablation=[],
     objective='default',
     loss_weights=[0.0, 0.4, 0.4, 0.2, 0.0],
-    gamma=None,
-    lambda_const=None,
-    p_th=None
+    gamma=0.1,
+    alpha=0.9,
+    lambda_const=[1.0, 1.0, 1.0, 1.0],
+    p_th=[0.0, 0.0, 2.0, 5.0],
   ): # labels_per_att is a dictionary mapping attribute index to number of labels
     
     super().__init__()
@@ -268,8 +269,8 @@ class TieredModelPipeline(nn.Module):
     self.loss_weights = torch.tensor(loss_weights, requires_grad=False)
     self.lambda_const = torch.tensor(lambda_const, requires_grad=False)
     self.gamma = torch.tensor(gamma, requires_grad=False)
-    self.lambda_const = torch.tensor(lambda_const, requires_grad=False)
     self.p_th = torch.tensor(p_th, requires_grad=False)
+    self.alpha = alpha
 
   def forward(
     self,
@@ -507,12 +508,12 @@ class TieredModelPipeline(nn.Module):
 
     return return_dict
 
-  def calculate_sigmoid_weighted_loss(self, losses, p, alpha=0.9):
+  def calculate_sigmoid_weighted_loss(self, losses, p):
     """Update weights of individual loss functions as proposed in 
     `Keeping Consistency of Sentence Generation and Document Classification 
     with Multi-Task Learning`_.
     """
-    lam = self.lambda_const * torch.sigmoid((p - self.p_th) / alpha)
+    lam = self.lambda_const * torch.sigmoid((p - self.p_th) / self.alpha)
     total_loss = torch.dot(lam, losses)
     return total_loss
 

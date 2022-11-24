@@ -24,7 +24,9 @@ def main(args):
     # Preprocess data
     print('Preprocessing data.')
     cloze_dataset_2s, order_dataset_2s = data_setup()
+    # print('here')
     tiered_dataset = get_baseline(cloze_dataset_2s, tokenizer)
+    # print('here now')
     tiered_tensor_dataset = get_tensor_dataset(tiered_dataset)
 
     # Create dataloaders for train, val, and test datasets
@@ -75,6 +77,7 @@ def main(args):
         objective=args.objective,
         loss_weights=args.loss_weights,
         gamma=args.gamma,
+        alpha=args.alpha,
         lambda_const=args.lambda_const,
         p_th=args.p_th
     ).to(device)
@@ -107,7 +110,8 @@ def main(args):
             val_dataloader=dev_dataloader,
             train_lc_data=train_lc_data,
             val_lc_data=val_lc_data,
-            epoch=epoch
+            epoch=epoch,
+            grad_surgery=args.grad_surgery
         )
         
         loss_values.append(train_loss)
@@ -223,13 +227,13 @@ if __name__ == "__main__":
     parser.add_argument("--train_spans", type=bool, default=False)
     
     # Objective-related hyperparameters
-    parser.add_argument("--objective", type=str, choices=["default", "pcgrad", "sigmoid", "gamma"], default="sigmoid")
+    parser.add_argument("--objective", type=str, choices=["default", "sigmoid", "gamma"], default="sigmoid")
     parser.add_argument("--grad-surgery", type=bool, default=False)
     parser.add_argument("--loss_weights", type=list, default=[0.0, 0.4, 0.4, 0.2, 0.0])
     parser.add_argument("--gamma", type=float, default=0.1)
+    parser.add_argument("--alpha", type=float, default=0.9)
     parser.add_argument("--lambda_const", type=list, default=[1.0, 1.0, 1.0, 1.0])
     parser.add_argument("--p_th", type=list, default=[0.0, 0.0, 2.0, 5.0])
-    parser.add_argument("--alpha", type=float, default=0.9)
 
     # Hyperparameters
     parser.add_argument("--batch_size", type=int, default=1)

@@ -135,7 +135,7 @@ def train_epoch_tiered(
   train_lc_data=None,
   val_lc_data=None,
   epoch=None,
-  pcgrad=False,
+  grad_surgery=False
 ):
   t0 = time.time()
 
@@ -207,7 +207,7 @@ def train_epoch_tiered(
     total_loss += loss.item()
 
     # Perform gradient-surfery
-    if pcgrad:
+    if grad_surgery:
       pass
 
     torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0) # Gradient clipping
