@@ -72,7 +72,11 @@ def main(args):
         model_name,
         device,
         ablation=args.ablation,
-        loss_weights=args.loss_weights
+        objective=args.objective,
+        loss_weights=args.loss_weights,
+        gamma=args.gamma,
+        lambda_const=args.lambda_const,
+        p_th=args.p_th
     ).to(device)
 
     # Initialize optimizer and scheduler
@@ -87,7 +91,6 @@ def main(args):
     # Initialize variables to track
     train_lc_data = []
     val_lc_data = []
-    output_dirs = []
     loss_values = []
     obj_values = []
 
@@ -103,7 +106,8 @@ def main(args):
             build_learning_curves=args.generate_learning_curve,
             val_dataloader=dev_dataloader,
             train_lc_data=train_lc_data,
-            val_lc_data=val_lc_data
+            val_lc_data=val_lc_data,
+            epoch=epoch
         )
         
         loss_values.append(train_loss)
@@ -214,25 +218,31 @@ if __name__ == "__main__":
     # Model
     parser.add_argument("--dataset", type=str, default="trip")
     parser.add_argument("--model", type=str, default="roberta")
-    parser.add_argument("--objective", type=str, choices=["default", "pcgrad"], default="default")
     parser.add_argument("--ablation", type=list, default=["attributes", "states-logits"])
     parser.add_argument("--subtask", type=str, default="cloze", choices=["cloze", "order"])
     parser.add_argument("--train_spans", type=bool, default=False)
     
+    # Objective-related hyperparameters
+    parser.add_argument("--objective", type=str, choices=["default", "pcgrad", "sigmoid", "gamma"], default="sigmoid")
+    parser.add_argument("--grad-surgery", type=bool, default=False)
+    parser.add_argument("--loss_weights", type=list, default=[0.0, 0.4, 0.4, 0.2, 0.0])
+    parser.add_argument("--gamma", type=float, default=0.1)
+    parser.add_argument("--lambda_const", type=list, default=[1.0, 1.0, 1.0, 1.0])
+    parser.add_argument("--p_th", type=list, default=[0.0, 0.0, 2.0, 5.0])
+    parser.add_argument("--alpha", type=float, default=0.9)
+
     # Hyperparameters
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--eval_batch_size", type=int, default=16)
     parser.add_argument("--test_batch_size", type=int, default=8)
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=1e-5)
-    parser.add_argument("--loss_weights", type=list, default=[0.0, 0.4, 0.4, 0.2, 0.0])
-    parser.add_argument("--grad-surgery", type=bool, default=False)
-    
+
     # Logging
     parser.add_argument("--output_dir", type=str, default="./output")
     parser.add_argument("--cache_dir", type=str, default="./cache")
     parser.add_argument("--generate_learning_curve", type=bool, default=False)
-    
+
     args = parser.parse_args()
-    
+
     main(args)

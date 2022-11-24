@@ -1,7 +1,9 @@
 import math
 
+import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss, MSELoss, KLDivLoss, Softmax, BCEWithLogitsLoss, BCELoss
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
@@ -128,6 +130,7 @@ class DebertaForMultipleChoice(DebertaPreTrainedModel):
             attentions=outputs.attentions,
         )
 
+
 # RoBERTa classification head borrowed from HuggingFace
 class ClassificationHead(nn.Module):
 
@@ -162,9 +165,26 @@ class ClassificationHead(nn.Module):
         else:
           return x, emb
 
+
 # Tiered model proposed for TRIP
 class TieredModelPipeline(nn.Module):
-  def __init__(self, embedding, num_sents, num_attributes, labels_per_att, config_class, model_name, device, ablation=[], loss_weights=[0.0, 0.4, 0.4, 0.2, 0.0]): # labels_per_att is a dictionary mapping attribute index to number of labels
+  def __init__(
+    self,
+    embedding,
+    num_sents,
+    num_attributes,
+    labels_per_att,
+    config_class,
+    model_name,
+    device,
+    ablation=[],
+    objective='default',
+    loss_weights=[0.0, 0.4, 0.4, 0.2, 0.0],
+    gamma=None,
+    lambda_const=None,
+    p_th=None
+  ): # labels_per_att is a dictionary mapping attribute index to number of labels
+    
     super().__init__()
 
     # Embedding and dropout
@@ -242,10 +262,30 @@ class TieredModelPipeline(nn.Module):
     self.decoder = nn.Linear(num_sents * encoding_size, num_sents) # pivot point multilabel classification layer
 
     self.ablation = ablation
-    self.loss_weights = loss_weights
 
+    # Loss function-related parameters
+    self.objective = objective
+    self.loss_weights = torch.tensor(loss_weights, requires_grad=False)
+    self.lambda_const = torch.tensor(lambda_const, requires_grad=False)
+    self.gamma = torch.tensor(gamma, requires_grad=False)
+    self.lambda_const = torch.tensor(lambda_const, requires_grad=False)
+    self.p_th = torch.tensor(p_th, requires_grad=False)
 
-  def forward(self, input_ids, input_lengths, input_entities, attention_mask=None, token_type_ids=None, attributes=None, preconditions=None, effects=None, conflicts=None, labels=None, training=False):
+  def forward(
+    self,
+    input_ids,
+    input_lengths,
+    input_entities,
+    attention_mask=None,
+    token_type_ids=None,
+    attributes=None,
+    preconditions=None,
+    effects=None,
+    conflicts=None,
+    labels=None,
+    training=False,
+    epoch: int = None
+  ):
 
     batch_size, num_stories, num_entities, num_sents, seq_length = input_ids.shape
     assert num_stories == 2
@@ -427,21 +467,59 @@ class TieredModelPipeline(nn.Module):
       loss_stories = loss_fct(out, labels)
       return_dict['loss_stories'] = loss_stories
 
+    # Calculate loss based on desired objective
     total_loss = 0.0
-    if loss_attributes is not None: # Not incorporated
-      total_loss += self.loss_weights[0] * loss_attributes
-    if loss_preconditions is not None:
-      total_loss += self.loss_weights[1] * loss_preconditions / self.num_attributes
-    if loss_effects is not None:
-      total_loss += self.loss_weights[2] * loss_effects / self.num_attributes
-    if loss_conflicts is not None:
-      total_loss += self.loss_weights[3] * loss_conflicts
-    if loss_stories is not None:
-      total_loss += self.loss_weights[4] * loss_stories
-    if loss_attributes is None and loss_preconditions is None and loss_effects is None and loss_conflicts is None and loss_stories is None:
-      total_loss = None
+    if self.objective == 'default':
+      if loss_attributes is not None: # Not incorporated
+        total_loss += self.loss_weights[0] * loss_attributes
+      if loss_preconditions is not None:
+        total_loss += self.loss_weights[1] * loss_preconditions / self.num_attributes
+      if loss_effects is not None:
+        total_loss += self.loss_weights[2] * loss_effects / self.num_attributes
+      if loss_conflicts is not None:
+        total_loss += self.loss_weights[3] * loss_conflicts
+      if loss_stories is not None:
+        total_loss += self.loss_weights[4] * loss_stories
+      if loss_attributes is None and loss_preconditions is None and loss_effects is None and loss_conflicts is None and loss_stories is None:
+        total_loss = None
+    elif self.objective == 'sigmoid':
+      losses = torch.tensor(
+        [
+          loss_preconditions / self.num_attributes,
+          loss_effects / self.num_attributes,
+          loss_conflicts,
+          loss_stories
+        ],
+        requires_grad=True
+      )
+      total_loss = self.calculate_sigmoid_weighted_loss(losses, epoch)
+    elif self.objective == 'gamma':
+      losses = [
+        loss_preconditions / self.num_attributes,
+        loss_effects / self.num_attributes,
+        loss_conflicts,
+        loss_stories
+      ]
+      total_loss = self.calculate_gamma_weighted_loss(losses)
 
     if total_loss is not None:
       return_dict['total_loss'] = total_loss
 
     return return_dict
+
+  def calculate_sigmoid_weighted_loss(self, losses, p, alpha=0.9):
+    """Update weights of individual loss functions as proposed in 
+    `Keeping Consistency of Sentence Generation and Document Classification 
+    with Multi-Task Learning`_.
+    """
+    lam = self.lambda_const * torch.sigmoid((p - self.p_th) / alpha)
+    total_loss = torch.dot(lam, losses)
+    return total_loss
+
+  def calculate_gamma_weighted_loss(self, l1, l2, gamma):
+    """Update gamma as proposed in `Hierarchical Multi-task Learning 
+    for Organization Evaluation of Argumentative Student Essays`_.
+    """
+    ratios = l1 / l2
+    gamma = torch.max(torch.min(torch.cat((ratios * gamma, 0))), 0.01)
+    return gamma
