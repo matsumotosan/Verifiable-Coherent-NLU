@@ -245,7 +245,7 @@ if __name__ == "__main__":
     # Logging
     parser.add_argument("--output_dir", type=str, default="./output")
     parser.add_argument("--cache_dir", type=str, default="./cache")
-    parser.add_argument("--generate_learning_curve", type=bool, default=False)
+    parser.add_argument("--generate_learning_curve", type=bool, default=True)
 
     args = parser.parse_args()
 

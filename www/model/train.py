@@ -187,18 +187,20 @@ def train_epoch_tiered(
 
     # Forward pass
     model.zero_grad()
-    out = model(input_ids, 
-              input_lengths,
-              input_entities,
-              attention_mask=input_mask,
-              token_type_ids=segment_ids,
-              attributes=attributes,
-              preconditions=preconditions,
-              effects=effects,
-              conflicts=conflicts,
-              labels=labels,
-              training=True,
-              epoch=epoch)
+    out = model(
+      input_ids, 
+      input_lengths,
+      input_entities,
+      attention_mask=input_mask,
+      token_type_ids=segment_ids,
+      attributes=attributes,
+      preconditions=preconditions,
+      effects=effects,
+      conflicts=conflicts,
+      labels=labels,
+      training=True,
+      epoch=epoch
+    )
 
     loss = out['total_loss']
 

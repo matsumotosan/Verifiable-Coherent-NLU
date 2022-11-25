@@ -513,6 +513,9 @@ class TieredModelPipeline(nn.Module):
     `Keeping Consistency of Sentence Generation and Document Classification 
     with Multi-Task Learning`_.
     """
+    print(self.lambda_const.type())
+    print(self.p_th.type())
+    print(self.alpha.type())
     lam = self.lambda_const * torch.sigmoid((p - self.p_th) / self.alpha)
     total_loss = torch.dot(lam, losses)
     return total_loss
