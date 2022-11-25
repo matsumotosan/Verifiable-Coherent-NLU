@@ -12,7 +12,7 @@ model_dict = {
     "bert_piqa": "sledz08/finetuned-bert-piqa",
     "roberta": "roberta-large",
     "roberta_mnli": "roberta-large-mnli",
-    "roberta_large_squad": "deepset/robert-large-squad2",
+    "roberta_large_squad": "deepset/roberta-large-squad2",
     "roberta_large_race": "LIAMF-USP/roberta-large-finetuned-race",
     "deberta": "microsoft/deberta-base",
     "deberta_large": "microsoft/deberta-large",
