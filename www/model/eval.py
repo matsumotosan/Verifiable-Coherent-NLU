@@ -253,7 +253,8 @@ def evaluate_tiered(model, eval_dataloader, device, metrics, seg_mode=False, ret
     bar_size = len(eval_dataloader)
     bar = progressbar.ProgressBar(max_value=bar_size, widgets=[progressbar.Bar('#', '[', ']'), ' ', progressbar.Percentage()])
     bar_idx = 0
-    bar.start()
+    # bar.start()
+    print("start evaluate_tiered")
 
   # Aggregate losses
   agg_losses = {}
@@ -389,9 +390,10 @@ def evaluate_tiered(model, eval_dataloader, device, metrics, seg_mode=False, ret
 
     if verbose:
       bar_idx += 1
-      bar.update(bar_idx)
+      # bar.update(bar_idx)
   if verbose:
-    bar.finish()
+    # bar.finish()
+    print("finish evaluate_tiered")
 
   # Calculate metrics
   if verbose:

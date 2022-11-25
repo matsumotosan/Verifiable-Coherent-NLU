@@ -181,7 +181,8 @@ def add_bert_features_tiered(dataset, tokenizer, seq_length, add_segment_ids=Fal
     bar_size = len(dataset[p])
     bar = progressbar.ProgressBar(max_value=bar_size, widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
     bar_idx = 0
-    bar.start()
+    # bar.start()
+    print("start add_bert_features_tiered")
     for i, ex_2s in enumerate(dataset[p]):
       for s_idx, ex_1s in enumerate(ex_2s['stories']):
         for ent_idx, ex in enumerate(ex_1s['entities']):
@@ -231,7 +232,8 @@ def add_bert_features_tiered(dataset, tokenizer, seq_length, add_segment_ids=Fal
             dataset[p][i]['stories'][s_idx]['entities'][ent_idx]['segment_ids'] = all_segment_ids
 
       bar_idx += 1
-      bar.update(bar_idx)
-    bar.finish()
+      # bar.update(bar_idx)
+    # bar.finish()
+    print("finish add_bert_features_tiered")
 
   return dataset  

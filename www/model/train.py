@@ -157,7 +157,8 @@ def train_epoch_tiered(
   bar_size = len(train_dataloader)
   bar = progressbar.ProgressBar(max_value=bar_size, widgets=[progressbar.Bar('#', '[', ']'), ' ', progressbar.Percentage()])
   bar_idx = 0
-  bar.start()
+  # bar.start()
+  print("start train_epoch_tiered")
 
   if train_lc_data is not None:
     train_lc_data.append([])
@@ -245,9 +246,10 @@ def train_epoch_tiered(
 
     
     bar_idx += 1
-    bar.update(bar_idx)
+    # bar.update(bar_idx)
 
-  bar.finish()
+  # bar.finish()
+  print("finish train_epoch_tiered")
   
   return total_loss / len(train_dataloader), model
 
