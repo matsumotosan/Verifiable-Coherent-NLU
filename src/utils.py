@@ -31,7 +31,7 @@ def get_components(model, cache_dir):
         emb_class = BertModel
         tokenizer_class = BertTokenizer
         lm_class = None
-    elif model in ['roberta', 'roberta_mnli', 'roberta_large_squad', 'roberta_large_race']:
+    elif model in ['roberta', 'roberta_mnli', 'roberta_large_squad', 'roberta_large_xlm_squad', 'roberta_large_race']:
         model_class = RobertaForSequenceClassification
         config_class = RobertaConfig
         emb_class = RobertaModel
