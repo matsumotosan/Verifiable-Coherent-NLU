@@ -224,6 +224,24 @@ def main(args):
     print_dict(metr_eff)
 
 
+    consistent_preds = 0
+    verifiable_preds = 0
+    total = 0
+    for expl in explanations:
+      if expl['valid_explanation']:
+        verifiable_preds += 1
+      if expl['story_pred'] == expl['story_label']:
+        if len(expl['conflict_pred']) == len(expl['conflict_label']) and expl['conflict_pred'][0] == expl['conflict_label'][0] and expl['conflict_pred'][1] == expl['conflict_label'][1]:
+          expl['consistent'] = True
+          consistent_preds += 1
+        else:
+          expl['consistent'] = False
+      total += 1
+
+    print('Found %s consistent preds (versus %s verifiable)' % (str(consistent_preds), str(verifiable_preds)))
+    
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="Train and test model on TRIP.")
     transformers.logging.set_verbosity_error()
