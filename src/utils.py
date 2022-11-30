@@ -9,10 +9,14 @@ from transformers import BertConfig, RobertaConfig, DebertaConfig
 
 model_dict = {
     "bert": "bert-large-uncased",
+    "bert_piqa": "sledz08/finetuned-bert-piqa",
     "roberta": "roberta-large",
     "roberta_mnli": "roberta-large-mnli",
+    "roberta_large_squad": "deepset/roberta-large-squad2",
+    "roberta_large_xlm_squad": "deepset/xlm-roberta-large-squad2",
+    "roberta_large_race": "LIAMF-USP/roberta-large-finetuned-race",
     "deberta": "microsoft/deberta-base",
-    "deberta_large": "microsoft/deberta-large"
+    "deberta_large": "microsoft/deberta-large",
 }
 
 
@@ -21,13 +25,13 @@ def get_components(model, cache_dir):
     model_name = model_dict[model]
 
     # Get model, config, embedding, and tokenizer class
-    if model == 'bert':
+    if model in ['bert', 'bert_piqa']:
         model_class = BertForSequenceClassification
         config_class = BertConfig
         emb_class = BertModel
         tokenizer_class = BertTokenizer
         lm_class = None
-    elif model in ['roberta', 'roberta_mnli']:
+    elif model in ['roberta', 'roberta_mnli', 'roberta_large_squad', 'roberta_large_xlm_squad', 'roberta_large_race']:
         model_class = RobertaForSequenceClassification
         config_class = RobertaConfig
         emb_class = RobertaModel

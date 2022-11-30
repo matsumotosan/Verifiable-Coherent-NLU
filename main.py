@@ -165,12 +165,12 @@ def main(args):
             os.makedirs(output_dir)
 
         # Save validation results
-        save_results(metr_attr, output_dir, dev_dataset_name % 'attributes')
-        save_results(metr_prec, output_dir, dev_dataset_name % 'preconditions')
-        save_results(metr_eff, output_dir, dev_dataset_name % 'effects')
-        save_results(metr_conflicts, output_dir, dev_dataset_name % 'conflicts')
-        save_results(metr_stories, output_dir, dev_dataset_name % 'stories')
-        save_results(explanations, output_dir, dev_dataset_name % 'explanations')
+        # save_results(metr_attr, output_dir, dev_dataset_name % 'attributes')
+        # save_results(metr_prec, output_dir, dev_dataset_name % 'preconditions')
+        # save_results(metr_eff, output_dir, dev_dataset_name % 'effects')
+        # save_results(metr_conflicts, output_dir, dev_dataset_name % 'conflicts')
+        # save_results(metr_stories, output_dir, dev_dataset_name % 'stories')
+        # save_results(explanations, output_dir, dev_dataset_name % 'explanations')
 
         # Just save story preds
         save_preds(dev_ids, all_stories, all_pred_stories, output_dir, dev_dataset_name % 'stories')
@@ -190,12 +190,12 @@ def main(args):
     explanations = add_entity_attribute_labels(explanations, tiered_dataset['test'], list(att_to_num_classes.keys()))
 
     test_dataset_name = args.subtask + '_%s_test'
-    save_results(metr_attr, output_dir, test_dataset_name % 'attributes')
-    save_results(metr_prec, output_dir, test_dataset_name % 'preconditions')
-    save_results(metr_eff, output_dir, test_dataset_name % 'effects')
-    save_results(metr_conflicts, output_dir, test_dataset_name % 'conflicts')
-    save_results(metr_stories, output_dir, test_dataset_name % 'stories')
-    save_results(explanations, output_dir, test_dataset_name % 'explanations')
+    # save_results(metr_attr, output_dir, test_dataset_name % 'attributes')
+    # save_results(metr_prec, output_dir, test_dataset_name % 'preconditions')
+    # save_results(metr_eff, output_dir, test_dataset_name % 'effects')
+    # save_results(metr_conflicts, output_dir, test_dataset_name % 'conflicts')
+    # save_results(metr_stories, output_dir, test_dataset_name % 'stories')
+    # save_results(explanations, output_dir, test_dataset_name % 'explanations')
 
     print('Stories:')
     print_dict(metr_stories)
