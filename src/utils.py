@@ -1,10 +1,10 @@
 import os
 
-from transformers import BertTokenizer, RobertaTokenizer, DebertaTokenizer
-from transformers import BertForSequenceClassification, RobertaForSequenceClassification, DebertaForSequenceClassification
-from transformers import BertModel, RobertaModel, DebertaModel
+from transformers import BertTokenizer, RobertaTokenizer, DebertaTokenizer, GPT2Tokenizer
+from transformers import BertForSequenceClassification, RobertaForSequenceClassification, DebertaForSequenceClassification, GPT2ForSequenceClassification
+from transformers import BertModel, RobertaModel, DebertaModel, GPT2Model
 from transformers import RobertaForMaskedLM
-from transformers import BertConfig, RobertaConfig, DebertaConfig
+from transformers import BertConfig, RobertaConfig, DebertaConfig, GPT2Config
 
 
 model_dict = {
@@ -17,8 +17,8 @@ model_dict = {
     "roberta_large_race": "LIAMF-USP/roberta-large-finetuned-race",
     "deberta": "microsoft/deberta-base",
     "deberta_large": "microsoft/deberta-large",
-    "distilgpt2": "distilgpt2",
-    "bart-base": "facebook/bart-base", 
+    "gpt2": "distilgpt2",
+    "bart": "facebook/bart-base", 
 }
 
 
@@ -44,6 +44,12 @@ def get_components(model, cache_dir):
         config_class = DebertaConfig
         emb_class = DebertaModel
         tokenizer_class = DebertaTokenizer
+        lm_class = None
+    elif model == 'gpt2':
+        model_class = GPT2ForSequenceClassification
+        config_class = GPT2Config
+        emb_class = GPT2Model
+        tokenizer_class = GPT2Tokenizer
         lm_class = None
 
     # Get tokenizer
