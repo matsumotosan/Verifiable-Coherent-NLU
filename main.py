@@ -221,7 +221,8 @@ def main(args):
           expl['consistent'] = False
       total += 1
 
-    print('Found %s consistent preds (versus %s verifiable)' % (str(consistent_preds), str(verifiable_preds)))
+    print('Found %s consistent preds (versus %s verifiable) out of %s total' % (str(consistent_preds), str(verifiable_preds), str(total)))
+    print('Consistency: %s' % str(float(consistent_preds) / total))
     
 
 
