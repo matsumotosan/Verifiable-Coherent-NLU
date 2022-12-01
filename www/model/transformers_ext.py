@@ -266,10 +266,10 @@ class TieredModelPipeline(nn.Module):
 
     # Loss function-related parameters
     self.objective = objective
-    self.loss_weights = torch.tensor(loss_weights, requires_grad=False)
-    self.lambda_const = torch.tensor(lambda_const, requires_grad=False)
-    self.gamma = torch.tensor(gamma, requires_grad=False)
-    self.p_th = torch.tensor(p_th, requires_grad=False)
+    self.loss_weights = loss_weights
+    self.lambda_const = np.array(lambda_const)
+    self.gamma = gamma
+    self.p_th = np.array(p_th)
     self.alpha = alpha
 
   def forward(
@@ -484,40 +484,37 @@ class TieredModelPipeline(nn.Module):
       if loss_attributes is None and loss_preconditions is None and loss_effects is None and loss_conflicts is None and loss_stories is None:
         total_loss = None
     elif self.objective == 'sigmoid':
-      losses = torch.tensor(
-        [
-          loss_preconditions / self.num_attributes,
-          loss_effects / self.num_attributes,
-          loss_conflicts,
-          loss_stories
-        ],
-        requires_grad=True
-      )
-      total_loss = self.calculate_sigmoid_weighted_loss(losses, epoch)
-    elif self.objective == 'gamma':
-      losses = [
+      total_loss = self.calculate_sigmoid_weighted_loss(
+        epoch,
         loss_preconditions / self.num_attributes,
         loss_effects / self.num_attributes,
         loss_conflicts,
         loss_stories
-      ]
-      total_loss = self.calculate_gamma_weighted_loss(losses)
+      )
+    elif self.objective == 'gamma':
+      total_loss = self.calculate_gamma_weighted_loss(
+        loss_preconditions / self.num_attributes,
+        loss_effects / self.num_attributes,
+        loss_conflicts,
+        loss_stories
+      )
 
     if total_loss is not None:
       return_dict['total_loss'] = total_loss
 
     return return_dict
 
-  def calculate_sigmoid_weighted_loss(self, losses, p):
+  def calculate_sigmoid_weighted_loss(self, p, loss_preconditions, loss_effects, loss_conflicts, loss_stories):
     """Update weights of individual loss functions as proposed in 
     `Keeping Consistency of Sentence Generation and Document Classification 
     with Multi-Task Learning`_.
     """
-    print(self.lambda_const.type())
-    print(self.p_th.type())
-    print(self.alpha.type())
-    lam = self.lambda_const * torch.sigmoid((p - self.p_th) / self.alpha)
-    total_loss = torch.dot(lam, losses)
+    self.loss_weights = self.lambda_const / (1 + np.exp(self.p_th - p) / self.alpha)
+    total_loss = \
+        self.loss_weights[0] * loss_preconditions \
+      + self.loss_weights[1] * loss_effects \
+      + self.loss_weights[2] * loss_conflicts \
+      + self.loss_weights[3] * loss_stories
     return total_loss
 
   def calculate_gamma_weighted_loss(self, l1, l2, gamma):
