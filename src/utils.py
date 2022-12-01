@@ -17,6 +17,8 @@ model_dict = {
     "roberta_large_race": "LIAMF-USP/roberta-large-finetuned-race",
     "deberta": "microsoft/deberta-base",
     "deberta_large": "microsoft/deberta-large",
+    "distilgpt2": "distilgpt2",
+    "bart-base": "facebook/bart-base", 
 }
 
 
