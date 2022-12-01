@@ -227,7 +227,7 @@ if __name__ == "__main__":
     parser.add_argument("--train_spans", type=bool, default=False)
     
     # Objective-related hyperparameters
-    parser.add_argument("--objective", type=str, choices=["default", "sigmoid", "gamma"], default="sigmoid")
+    parser.add_argument("--objective", type=str, choices=["default", "sigmoid", "gamma"], default="default")
     parser.add_argument("--grad-surgery", type=bool, default=False)
     parser.add_argument("--loss_weights", type=list, default=[0.0, 0.4, 0.4, 0.2, 0.0])
     parser.add_argument("--gamma", type=float, default=0.1)
