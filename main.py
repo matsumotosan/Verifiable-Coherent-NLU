@@ -16,6 +16,8 @@ from src.dataloading import get_dataloaders
 from src.preprocessing import data_setup, get_baseline, get_tensor_dataset
 from src.utils import get_components
 
+from Pytorch_PCGrad.pcgrad import PCGrad
+
 
 def main(args):
     # Get model-related components (LM and tokenizer)
@@ -77,12 +79,16 @@ def main(args):
 
     # Initialize optimizer and scheduler
     print('Initializing optimizer and scheduler.')
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
-    scheduler = get_linear_schedule_with_warmup(
-        optimizer,
-        num_warmup_steps=0,
-        num_training_steps=len(train_dataloader) * args.num_epochs
-    )
+    if args.grad_surgery:
+        optimizer = PCGrad(torch.optim.AdamW(model.parameters(), lr=args.learning_rate))
+    else:
+        optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
+    
+    # scheduler = get_linear_schedule_with_warmup(
+    #     optimizer,
+    #     num_warmup_steps=0,
+    #     num_training_steps=len(train_dataloader) * args.num_epochs
+    # )
 
     # Initialize variables to track
     train_lc_data = []
@@ -103,7 +109,8 @@ def main(args):
             build_learning_curves=args.generate_learning_curve,
             val_dataloader=dev_dataloader,
             train_lc_data=train_lc_data,
-            val_lc_data=val_lc_data
+            val_lc_data=val_lc_data,
+            grad_surgery=args.grad_surgery
         )
         
         loss_values.append(train_loss)
@@ -233,11 +240,12 @@ if __name__ == "__main__":
     # Model
     parser.add_argument("--dataset", type=str, default="trip")
     parser.add_argument("--model", type=str, default="roberta")
-    parser.add_argument("--objective", type=str, choices=["default", "pcgrad"], default="default")
+    parser.add_argument("--objective", type=str, choices=["default"], default="default")
     parser.add_argument("--ablation", type=list, default=["attributes", "states-logits"])
     parser.add_argument("--subtask", type=str, default="cloze", choices=["cloze", "order"])
     parser.add_argument("--train_spans", type=bool, default=False)
-    
+    parser.add_argument("--grad_surgery", type=bool, default=False)
+
     # Hyperparameters
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--eval_batch_size", type=int, default=16)

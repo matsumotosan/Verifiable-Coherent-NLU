@@ -1,3 +1,3 @@
-[submodule "Pytorch-PCGrad"]
-	path = Pytorch-PCGrad
-	url = https://github.com/matsumotosan/Pytorch-PCGrad.git
+[submodule "Pytorch_PCGrad"]
+	path = Pytorch_PCGrad
+	url = https://github.com/matsumotosan/Pytorch_PCGrad.git
