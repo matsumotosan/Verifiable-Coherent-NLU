@@ -49,7 +49,7 @@ def get_tensor_dataset_tiered(dataset, max_sentences, add_segment_ids=False):
   num_spans = len(dataset[0]['stories'][0]['entities'][0]['span_labels'])
   # print(max_entities, max_sentences, seq_length, num_attributes, num_spans)
 
-  all_input_ids = torch.tensor([[[[story['entities'][e]['input_ids'][s] if e < len(story['entities']) else np.zeros((seq_length)) for s in range(max_sentences)] for e in range(max_entities)] for story in ex_2s['stories']] for ex_2s in dataset])
+  all_input_ids = torch.tensor(np.array([[[[story['entities'][e]['input_ids'][s] if e < len(story['entities']) else np.zeros((seq_length)) for s in range(max_sentences)] for e in range(max_entities)] for story in ex_2s['stories']] for ex_2s in dataset]))
   all_lengths = torch.tensor([[[len(story['sentences']) for e in range(max_entities)] for story in ex_2s['stories']] for ex_2s in dataset], dtype=torch.int64)
   num_entities = torch.tensor([[len(story['entities']) for story in ex_2s['stories']] for ex_2s in dataset], dtype=torch.int64)
   all_input_mask = torch.tensor([[[[story['entities'][e]['input_mask'][s] if e < len(story['entities']) else np.zeros((seq_length)) for s in range(max_sentences)] for e in range(max_entities)] for story in ex_2s['stories']] for ex_2s in dataset])
