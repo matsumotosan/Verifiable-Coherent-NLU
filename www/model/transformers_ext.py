@@ -174,6 +174,10 @@ class TieredModelPipeline(nn.Module):
       drop_out = getattr(embedding.config, "dropout_rate", None)
     if drop_out is None:
       drop_out = getattr(embedding.config, "hidden_dropout_prob", None)
+    if drop_out is None:
+      drop_out = getattr(embedding.config, "attn_pdrop", None)
+    if drop_out is None:
+      drop_out = 0.1
     assert drop_out is not None, "Didn't set dropout!"
     self.dropout = nn.Dropout(drop_out)   
 
