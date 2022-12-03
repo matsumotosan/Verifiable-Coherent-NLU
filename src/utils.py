@@ -1,10 +1,10 @@
 import os
 
-from transformers import BertTokenizer, RobertaTokenizer, DebertaTokenizer, GPT2Tokenizer
-from transformers import BertForSequenceClassification, RobertaForSequenceClassification, DebertaForSequenceClassification, GPT2ForSequenceClassification
-from transformers import BertModel, RobertaModel, DebertaModel, GPT2Model
+from transformers import BertTokenizer, RobertaTokenizer, DebertaTokenizer, GPT2Tokenizer, BartTokenizer
+from transformers import BertForSequenceClassification, RobertaForSequenceClassification, DebertaForSequenceClassification, GPT2ForSequenceClassification, BartForSequenceClassification
+from transformers import BertModel, RobertaModel, DebertaModel, GPT2Model, BartModel
 from transformers import RobertaForMaskedLM
-from transformers import BertConfig, RobertaConfig, DebertaConfig, GPT2Config
+from transformers import BertConfig, RobertaConfig, DebertaConfig, GPT2Config, BartConfig
 
 
 model_dict = {
@@ -50,6 +50,12 @@ def get_components(model, cache_dir):
         config_class = GPT2Config
         emb_class = GPT2Model
         tokenizer_class = GPT2Tokenizer
+        lm_class = None
+    elif model == 'bart':
+        model_class = BartForSequenceClassification
+        config_class = BartConfig
+        emb_class = BartModel
+        tokenizer_class = BartTokenizer
         lm_class = None
 
     # Get tokenizer
