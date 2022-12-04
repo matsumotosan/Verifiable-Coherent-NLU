@@ -18,6 +18,7 @@ model_dict = {
     "deberta": "microsoft/deberta-base",
     "deberta_large": "microsoft/deberta-large",
     "gpt2": "distilgpt2",
+    "gpt2-large": "gpt2-large",
     "bart": "facebook/bart-base", 
 }
 
@@ -45,7 +46,7 @@ def get_components(model, cache_dir):
         emb_class = DebertaModel
         tokenizer_class = DebertaTokenizer
         lm_class = None
-    elif model == 'gpt2':
+    elif model in ['gpt2', 'gpt2-large']:
         model_class = GPT2ForSequenceClassification
         config_class = GPT2Config
         emb_class = GPT2Model
