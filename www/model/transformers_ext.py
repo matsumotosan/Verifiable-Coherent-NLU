@@ -276,7 +276,7 @@ class TieredModelPipeline(nn.Module):
     self,
     input_ids,
     input_lengths,
-    input_entities,
+    input_entities,   
     attention_mask=None,
     token_type_ids=None,
     attributes=None,
@@ -504,7 +504,14 @@ class TieredModelPipeline(nn.Module):
 
     return return_dict
 
-  def calculate_sigmoid_weighted_loss(self, p, loss_preconditions, loss_effects, loss_conflicts, loss_stories):
+  def calculate_sigmoid_weighted_loss(
+    self,
+    p: int,
+    loss_preconditions,
+    loss_effects,
+    loss_conflicts,
+    loss_stories
+  ):
     """Update weights of individual loss functions as proposed in 
     `Keeping Consistency of Sentence Generation and Document Classification 
     with Multi-Task Learning`_.

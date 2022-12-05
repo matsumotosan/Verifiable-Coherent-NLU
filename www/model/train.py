@@ -128,13 +128,13 @@ def train_epoch_tiered(
   optimizer,
   train_dataloader,
   device,
+  epoch:int,
   seg_mode=False,
   return_losses=False,
   build_learning_curves=False,
   val_dataloader=None,
   train_lc_data=None,
   val_lc_data=None,
-  epoch=None,
   grad_surgery=False
 ):
   t0 = time.time()
@@ -200,7 +200,7 @@ def train_epoch_tiered(
       conflicts=conflicts,
       labels=labels,
       training=True,
-      epoch=epoch
+      epoch=epoch,
     )
 
     loss = out['total_loss']
@@ -232,7 +232,17 @@ def train_epoch_tiered(
       # Add a validation record 5 times per epoch
       chunk_size = len(train_dataloader) // 5
       if (len(train_dataloader) - step - 1) % chunk_size == 0:
-        validation_results = evaluate_tiered(model, val_dataloader, device, [(accuracy_score, 'accuracy'), (f1_score, 'f1')], seg_mode=False, return_explanations=True, return_losses=True, verbose=False)
+        validation_results = evaluate_tiered(
+          model,
+          val_dataloader,
+          device,
+          [(accuracy_score, 'accuracy'), (f1_score, 'f1')],
+          epoch,
+          seg_mode=False,
+          return_explanations=True,
+          return_losses=True,
+          verbose=False
+        )
         out = validation_results[16]
 
         val_record = {'epoch': len(val_lc_data) - 1,

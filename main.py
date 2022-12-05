@@ -105,12 +105,12 @@ def main(args):
             optimizer,
             train_dataloader,
             device,
+            epoch=epoch,
             seg_mode=False,
             build_learning_curves=args.generate_learning_curve,
             val_dataloader=dev_dataloader,
             train_lc_data=train_lc_data,
             val_lc_data=val_lc_data,
-            epoch=epoch,
             grad_surgery=args.grad_surgery
         )
         
