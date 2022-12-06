@@ -1,5 +1,6 @@
 import os
 
+from transformers import AutoTokenizer
 from transformers import BertTokenizer, RobertaTokenizer, DebertaTokenizer
 from transformers import BertForSequenceClassification, RobertaForSequenceClassification, DebertaForSequenceClassification
 from transformers import BertModel, RobertaModel, DebertaModel
@@ -38,7 +39,10 @@ def get_components(model, cache_dir):
         config_class = RobertaConfig
         emb_class = RobertaModel
         lm_class = RobertaForMaskedLM
-        tokenizer_class = RobertaTokenizer
+        if model in ['roberta_large_xlm_squad']:
+            tokenizer_class = AutoTokenizer
+        else:
+            tokenizer_class = RobertaTokenizer
     elif model in ['deberta', 'deberta_large']:
         model_class = DebertaForSequenceClassification
         config_class = DebertaConfig
