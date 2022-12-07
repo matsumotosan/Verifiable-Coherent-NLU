@@ -195,7 +195,15 @@ def main(args):
     metr_prec, all_pred_prec, all_prec, \
     metr_eff, all_pred_eff, all_eff, \
     metr_conflicts, all_pred_conflicts, all_conflicts, \
-    metr_stories, all_pred_stories, all_stories, explanations = evaluate_tiered(model, test_dataloader, device, [(accuracy_score, 'accuracy'), (f1_score, 'f1')], seg_mode=False, return_explanations=True)
+    metr_stories, all_pred_stories, all_stories, explanations = evaluate_tiered(
+        model,
+        test_dataloader,
+        device,
+        [(accuracy_score, 'accuracy'), (f1_score, 'f1')],
+        epoch,
+        seg_mode=False,
+        return_explanations=True
+    )
     explanations = add_entity_attribute_labels(explanations, tiered_dataset['test'], list(att_to_num_classes.keys()))
 
     test_dataset_name = args.subtask + '_%s_test'
