@@ -122,6 +122,7 @@ def main(args):
             dev_dataloader,
             device,
             [(accuracy_score, 'accuracy'), (f1_score, 'f1')],
+            epoch,
             seg_mode=False,
             return_explanations=True
         )
