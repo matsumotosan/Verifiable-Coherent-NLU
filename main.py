@@ -277,8 +277,8 @@ if __name__ == "__main__":
     parser.add_argument("--loss_weights", type=list, default=[0.0, 0.4, 0.4, 0.2, 0.0])
     parser.add_argument("--gamma", type=float, default=0.1)
     parser.add_argument("--alpha", type=float, default=0.9)
-    parser.add_argument("--lambda_const", type=list, default=[1.0, 1.0, 1.0, 1.0])
-    parser.add_argument("--p_th", type=list, default=[0.0, 0.0, 2.0, 5.0])
+    parser.add_argument("--lambda_const", type=float, nargs=4, default=[1.0, 1.0, 1.0, 1.0])
+    parser.add_argument("--p_th", type=float, nargs=4, default=[0.0, 0.0, 2.0, 5.0])
 
     # Hyperparameters
     parser.add_argument("--batch_size", type=int, default=1)
