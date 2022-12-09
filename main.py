@@ -18,6 +18,23 @@ from src.utils import get_components
 
 
 def main(args):
+    # Print run configuration
+    print("====================")
+    print("JOB CONFIGURATION")
+    print(f"Model: {args.model}")
+    print(f"Objective: {args.objective}")
+    print(f"Loss weights: {args.loss_weights}")
+    print(f"gamma: {args.gamma}")
+    print(f"alpha: {args.alpha}")
+    print(f"lambda_const: {args.lambda_const}")
+    print(f"p_th: {args.p_th}")
+    print(f"Batch size: {args.batch_size}")
+    print(f"Eval batch size: {args.eval_batch_size}")
+    print(f"Test batch size: {args.test_batch_size}")
+    print(f"Epochs: {args.num_epochs}")
+    print(f"Learning rate: {args.learning_rate}")
+    print("====================")
+    
     # Get model-related components (LM and tokenizer)
     model_name, model_class, config_class, emb_class, tokenizer, lm_class = get_components(args.model, args.cache_dir)
 
