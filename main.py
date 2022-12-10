@@ -1,4 +1,5 @@
 import os
+import pickle
 import torch
 import transformers
 
@@ -205,6 +206,11 @@ def main(args):
         emb.save_pretrained(output_dir)
         torch.save(model, os.path.join(output_dir, 'classifiers.pth'))
         tokenizer.save_vocabulary(output_dir)
+
+    # Save gamma history (if gamma weighted update)
+    if args.objective == 'gamma':
+        with open(os.path.join(output_dir, 'gamma_history.pkl'), 'wb') as f:
+            pickle.dump(model.gamma_history, f)
 
     # Test model (#TODO: implement testing)
     print("Testing model")

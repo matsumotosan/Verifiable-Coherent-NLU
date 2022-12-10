@@ -272,6 +272,7 @@ class TieredModelPipeline(nn.Module):
     self.gamma_story = gamma
     self.p_th = np.array(p_th)
     self.alpha = alpha
+    self.gamma_history = []
 
   def forward(
     self,
@@ -547,6 +548,9 @@ class TieredModelPipeline(nn.Module):
     self.gamma_story = np.max(np.array([
       np.min(np.array([ratio_story * self.gamma_story, 1.0])), 0.01
     ]))
+
+    # Save gammas
+    self.gamma_history.append([self.gamma_conflict, self.gamma_story])
 
     # Calculate gamma-weighted loss
     total_loss = \
