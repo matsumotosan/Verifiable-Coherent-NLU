@@ -268,7 +268,8 @@ class TieredModelPipeline(nn.Module):
     self.objective = objective
     self.loss_weights = loss_weights
     self.lambda_const = np.array(lambda_const)
-    self.gamma = gamma
+    self.gamma_conflict = gamma
+    self.gamma_story = gamma
     self.p_th = np.array(p_th)
     self.alpha = alpha
 
@@ -512,9 +513,8 @@ class TieredModelPipeline(nn.Module):
     loss_conflicts,
     loss_stories
   ):
-    """Update weights of individual loss functions as proposed in 
-    `Keeping Consistency of Sentence Generation and Document Classification 
-    with Multi-Task Learning`_.
+    """Calculate multi-task loss as proposed in 
+    `Keeping Consistency of Sentence Generation and Document Classification with Multi-Task Learning`_.
     """
     self.loss_weights = self.lambda_const / (1 + np.exp(self.p_th - p) / self.alpha)
     total_loss = \
@@ -524,10 +524,35 @@ class TieredModelPipeline(nn.Module):
       + self.loss_weights[3] * loss_stories
     return total_loss
 
-  def calculate_gamma_weighted_loss(self, l1, l2, gamma):
-    """Update gamma as proposed in `Hierarchical Multi-task Learning 
-    for Organization Evaluation of Argumentative Student Essays`_.
+  def calculate_gamma_weighted_loss(
+    self,
+    loss_preconditions,
+    loss_effects,
+    loss_conflicts,
+    loss_stories,
+  ):
+    """Calculate multi-task loss as proposed in
+    `Hierarchical Multi-task Learning for Organization Evaluation of Argumentative Student Essays`_.
     """
-    ratios = l1 / l2
-    gamma = torch.max(torch.min(torch.cat((ratios * gamma, 0))), 0.01)
-    return gamma
+    # Calculate loss ratios
+    low_level_loss = loss_preconditions.detach().cpu().numpy() + loss_effects.detach().cpu().numpy()
+    ratio_conflict = loss_conflicts.detach().cpu().numpy() / low_level_loss
+    ratio_story = loss_stories.detach().cpu().numpy() / low_level_loss
+    
+    # Update gamma
+    self.gamma_conflict = np.max(np.array([
+      np.min(np.array([ratio_conflict * self.gamma_conflict, 1.0])), 0.01
+    ]))
+    
+    self.gamma_story = np.max(np.array([
+      np.min(np.array([ratio_story * self.gamma_story, 1.0])), 0.01
+    ]))
+
+    # Calculate gamma-weighted loss
+    total_loss = \
+      loss_preconditions \
+    + loss_effects \
+    + self.gamma_conflict * loss_conflicts \
+    + self.gamma_story * loss_stories
+
+    return total_loss
