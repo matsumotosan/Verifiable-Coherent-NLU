@@ -28,10 +28,10 @@ def main(args):
     ax.plot(p, lam[3, :], linestyle='solid', color='c', label=f'$\lambda_s\ (\lambda_s^{{const}}={{{args.lambda_const[3]}}}, p_s^{{th}}={{{args.p_th[3]}}})$')
 
     # Figure annotations
-    ax.legend(bbox_to_anchor=(0.5, -0.2), loc='upper center', ncol=2)
-    ax.set_xlabel(r'Epoch - $p$')
-    ax.set_ylabel(r'Task Loss Weight - $\lambda_i(p)$')
-    ax.set_title(rf"Sigmoid Loss Weight Schedule (${{\alpha={{{args.alpha}}}}}$)")
+    ax.legend(bbox_to_anchor=(0.5, -0.3), loc='upper center', ncol=2, fontsize=12)
+    ax.set_xlabel(r'Epoch - $p$', size=16)
+    ax.set_ylabel(r'Task Loss Weight - $\lambda_i(p)$', size=16)
+    ax.set_title(rf"Sigmoid Loss Weight Schedule (${{\alpha={{{args.alpha}}}}}$)", size=16)
     plt.grid(True)
     plt.savefig(f'figures/sigmoid_{args.lambda_const}_{args.p_th}.png', dpi=200)
     plt.show()
@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--alpha", type=float, default=0.9)
-    parser.add_argument("--lambda_const", type=float, nargs=4, default=[0.4, 0.4, 0.2, 0.1])
-    parser.add_argument("--p_th", type=float, nargs=4, default=[0.0, 0.0, 5.0, 8.0])
+    parser.add_argument("--lambda_const", type=float, nargs=4, default=[0.4, 0.4, 0.2, 0.0])
+    parser.add_argument("--p_th", type=float, nargs=4, default=[0.0, 0.0, 10.0, 8.0])
 
     args = parser.parse_args()
 

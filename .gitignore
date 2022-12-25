@@ -9,3 +9,4 @@ cache/
 *.out
 venv/
 .vscode/
+*.pkl
