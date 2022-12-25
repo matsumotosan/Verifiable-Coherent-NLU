@@ -8,4 +8,5 @@ __pycache__/
 cache/
 *.out
 venv/
-.vscode
+.vscode/
+*.pkl

@@ -123,7 +123,20 @@ def train_epoch(model, optimizer, train_dataloader, device, list_output=False, n
     return total_loss / len(train_dataloader), model
 
 # Train a state classification pipeline for one epoch
-def train_epoch_tiered(model, optimizer, train_dataloader, device, seg_mode=False, return_losses=False, build_learning_curves=False, val_dataloader=None, train_lc_data=None, val_lc_data=None):
+def train_epoch_tiered(
+  model,
+  optimizer,
+  train_dataloader,
+  device,
+  epoch:int,
+  seg_mode=False,
+  return_losses=False,
+  build_learning_curves=False,
+  val_dataloader=None,
+  train_lc_data=None,
+  val_lc_data=None,
+  grad_surgery=False
+):
   t0 = time.time()
 
   total_loss = 0
@@ -175,26 +188,34 @@ def train_epoch_tiered(model, optimizer, train_dataloader, device, seg_mode=Fals
 
     # Forward pass
     model.zero_grad()
-    out = model(input_ids, 
-                input_lengths,
-                input_entities,
-                attention_mask=input_mask,
-                token_type_ids=segment_ids,
-                attributes=attributes,
-                preconditions=preconditions,
-                effects=effects,
-                conflicts=conflicts,
-                labels=labels,
-                training=True)
+    out = model(
+      input_ids, 
+      input_lengths,
+      input_entities,
+      attention_mask=input_mask,
+      token_type_ids=segment_ids,
+      attributes=attributes,
+      preconditions=preconditions,
+      effects=effects,
+      conflicts=conflicts,
+      labels=labels,
+      training=True,
+      epoch=epoch,
+    )
 
     loss = out['total_loss']
-              
-    # Backward pass
-    total_loss += loss.item()
+
+    # Backward pass  
     loss.backward()
+    total_loss += loss.item()
+
+    # Perform gradient-surfery
+    if grad_surgery:
+      pass
 
     torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0) # Gradient clipping
 
+    # Update model parameters
     optimizer.step()
 
     # Build learning curve data if needed
@@ -211,7 +232,17 @@ def train_epoch_tiered(model, optimizer, train_dataloader, device, seg_mode=Fals
       # Add a validation record 5 times per epoch
       chunk_size = len(train_dataloader) // 5
       if (len(train_dataloader) - step - 1) % chunk_size == 0:
-        validation_results = evaluate_tiered(model, val_dataloader, device, [(accuracy_score, 'accuracy'), (f1_score, 'f1')], seg_mode=False, return_explanations=True, return_losses=True, verbose=False)
+        validation_results = evaluate_tiered(
+          model,
+          val_dataloader,
+          device,
+          [(accuracy_score, 'accuracy'), (f1_score, 'f1')],
+          epoch,
+          seg_mode=False,
+          return_explanations=True,
+          return_losses=True,
+          verbose=False
+        )
         out = validation_results[16]
 
         val_record = {'epoch': len(val_lc_data) - 1,

@@ -1,4 +1,5 @@
 import os
+import pickle
 import torch
 import transformers
 
@@ -18,13 +19,32 @@ from src.utils import get_components
 
 
 def main(args):
+    # Print run configuration
+    print("====================")
+    print("JOB CONFIGURATION")
+    print(f"Model: {args.model}")
+    print(f"Objective: {args.objective}")
+    print(f"Loss weights: {args.loss_weights}")
+    print(f"gamma: {args.gamma}")
+    print(f"alpha: {args.alpha}")
+    print(f"lambda_const: {args.lambda_const}")
+    print(f"p_th: {args.p_th}")
+    print(f"Batch size: {args.batch_size}")
+    print(f"Eval batch size: {args.eval_batch_size}")
+    print(f"Test batch size: {args.test_batch_size}")
+    print(f"Epochs: {args.num_epochs}")
+    print(f"Learning rate: {args.learning_rate}")
+    print("====================")
+    
     # Get model-related components (LM and tokenizer)
     model_name, model_class, config_class, emb_class, tokenizer, lm_class = get_components(args.model, args.cache_dir)
 
     # Preprocess data
     print('Preprocessing data.')
     cloze_dataset_2s, order_dataset_2s = data_setup()
+    # print('here')
     tiered_dataset = get_baseline(cloze_dataset_2s, tokenizer)
+    # print('here now')
     tiered_tensor_dataset = get_tensor_dataset(tiered_dataset)
 
     # Create dataloaders for train, val, and test datasets
@@ -72,7 +92,12 @@ def main(args):
         model_name,
         device,
         ablation=args.ablation,
-        loss_weights=args.loss_weights
+        objective=args.objective,
+        loss_weights=args.loss_weights,
+        gamma=args.gamma,
+        alpha=args.alpha,
+        lambda_const=args.lambda_const,
+        p_th=args.p_th
     ).to(device)
 
     # Initialize optimizer and scheduler
@@ -87,7 +112,6 @@ def main(args):
     # Initialize variables to track
     train_lc_data = []
     val_lc_data = []
-    output_dirs = []
     loss_values = []
     obj_values = []
 
@@ -99,11 +123,13 @@ def main(args):
             optimizer,
             train_dataloader,
             device,
+            epoch=epoch,
             seg_mode=False,
             build_learning_curves=args.generate_learning_curve,
             val_dataloader=dev_dataloader,
             train_lc_data=train_lc_data,
-            val_lc_data=val_lc_data
+            val_lc_data=val_lc_data,
+            grad_surgery=args.grad_surgery
         )
         
         loss_values.append(train_loss)
@@ -114,6 +140,7 @@ def main(args):
             dev_dataloader,
             device,
             [(accuracy_score, 'accuracy'), (f1_score, 'f1')],
+            epoch,
             seg_mode=False,
             return_explanations=True
         )
@@ -180,13 +207,26 @@ def main(args):
         torch.save(model, os.path.join(output_dir, 'classifiers.pth'))
         tokenizer.save_vocabulary(output_dir)
 
+    # Save gamma history (if gamma weighted update)
+    if args.objective == 'gamma':
+        with open(os.path.join(output_dir, 'gamma_history.pkl'), 'wb') as f:
+            pickle.dump(model.gamma_history, f)
+
     # Test model (#TODO: implement testing)
     print("Testing model")
     metr_attr, all_pred_atts, all_atts, \
     metr_prec, all_pred_prec, all_prec, \
     metr_eff, all_pred_eff, all_eff, \
     metr_conflicts, all_pred_conflicts, all_conflicts, \
-    metr_stories, all_pred_stories, all_stories, explanations = evaluate_tiered(model, test_dataloader, device, [(accuracy_score, 'accuracy'), (f1_score, 'f1')], seg_mode=False, return_explanations=True)
+    metr_stories, all_pred_stories, all_stories, explanations = evaluate_tiered(
+        model,
+        test_dataloader,
+        device,
+        [(accuracy_score, 'accuracy'), (f1_score, 'f1')],
+        epoch,
+        seg_mode=False,
+        return_explanations=True
+    )
     explanations = add_entity_attribute_labels(explanations, tiered_dataset['test'], list(att_to_num_classes.keys()))
 
     test_dataset_name = args.subtask + '_%s_test'
@@ -233,25 +273,31 @@ if __name__ == "__main__":
     # Model
     parser.add_argument("--dataset", type=str, default="trip")
     parser.add_argument("--model", type=str, default="roberta")
-    parser.add_argument("--objective", type=str, choices=["default", "pcgrad"], default="default")
     parser.add_argument("--ablation", type=list, default=["attributes", "states-logits"])
     parser.add_argument("--subtask", type=str, default="cloze", choices=["cloze", "order"])
     parser.add_argument("--train_spans", type=bool, default=False)
     
+    # Objective-related hyperparameters
+    parser.add_argument("--objective", type=str, choices=["default", "sigmoid", "gamma"], default="default")
+    parser.add_argument("--grad-surgery", type=bool, default=False)
+    parser.add_argument("--loss_weights", type=list, default=[0.0, 0.4, 0.4, 0.2, 0.0])
+    parser.add_argument("--gamma", type=float, default=0.1)
+    parser.add_argument("--alpha", type=float, default=0.9)
+    parser.add_argument("--lambda_const", type=float, nargs=4, default=[1.0, 1.0, 1.0, 1.0])
+    parser.add_argument("--p_th", type=float, nargs=4, default=[0.0, 0.0, 2.0, 5.0])
+
     # Hyperparameters
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--eval_batch_size", type=int, default=16)
     parser.add_argument("--test_batch_size", type=int, default=8)
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=1e-5)
-    parser.add_argument("--loss_weights", type=list, default=[0.0, 0.4, 0.4, 0.2, 0.0])
-    parser.add_argument("--grad-surgery", type=bool, default=False)
-    
+
     # Logging
     parser.add_argument("--output_dir", type=str, default="./output")
     parser.add_argument("--cache_dir", type=str, default="./cache")
-    parser.add_argument("--generate_learning_curve", type=bool, default=False)
-    
+    parser.add_argument("--generate_learning_curve", type=bool, default=True)
+
     args = parser.parse_args()
-    
+
     main(args)

@@ -216,7 +216,18 @@ def list_comparison(pred, label):
   return prec, rec, corr, perf
 
 # Run evaluation for the conflict detector
-def evaluate_tiered(model, eval_dataloader, device, metrics, seg_mode=False, return_softmax=False, return_explanations=False, return_losses=False, verbose=True):
+def evaluate_tiered(
+  model,
+  eval_dataloader,
+  device,
+  metrics,
+  epoch,
+  seg_mode=False,
+  return_softmax=False,
+  return_explanations=False,
+  return_losses=False,
+  verbose=True
+):
   if verbose:
     print('\tBeginning evaluation...')
 
@@ -286,16 +297,19 @@ def evaluate_tiered(model, eval_dataloader, device, metrics, seg_mode=False, ret
       #             input_entities,
       #             attention_mask=input_mask,
       #             token_type_ids=segment_ids)
-      out = model(input_ids,
-                  input_lengths,
-                  input_entities,
-                  attention_mask=input_mask,
-                  token_type_ids=segment_ids,
-                  attributes=attributes,
-                  preconditions=preconditions,
-                  effects=effects,
-                  conflicts=conflicts,
-                  labels=labels)
+      out = model(
+        input_ids,
+        input_lengths,
+        input_entities,
+        attention_mask=input_mask,
+        token_type_ids=segment_ids,
+        attributes=attributes,
+        preconditions=preconditions,
+        effects=effects,
+        conflicts=conflicts,
+        labels=labels,
+        epoch=epoch
+      )
     if return_losses:
       for k in out:
         if 'loss' in k:
